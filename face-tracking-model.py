@@ -1,13 +1,13 @@
 import tensorflow as tf 
-
+import tensorflow_addons as tfa
 
 print("Tensorflow version:", tf.__version__)   
 
 TRAIN_DIRECTORY_LOCATION = r'Datasets\face_dataset_train_images'
 VAL_DIRECTORY_LOCATION = r'Datasets\face_dataset_val_images' 
 
-IMG_SIZE=(250,250)
-BATCH_SIZE = 32
+IMG_SIZE=(100, 100)
+BATCH_SIZE = 16
 
 
 train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCATION,
@@ -17,7 +17,7 @@ train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCA
 
 validation_dataset = tf.keras.utils.image_dataset_from_directory(VAL_DIRECTORY_LOCATION,
                                                   shuffle=True,
-                                                  batch_size=BATCH_SIZE,
+                                                  batch_size=17,
                                                   image_size=IMG_SIZE)
 #train_dataset = tf.image.resize(train_dataset, [250,250])
 #validation_dataset = tf.image.resize(validation_dataset, [250,250])
@@ -25,13 +25,13 @@ class_names = train_dataset.class_names
 
 data_augmentation = tf.keras.Sequential([
   tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
-  tf.keras.layers.experimental.preprocessing.RandomRotation(1),
+  tf.keras.layers.experimental.preprocessing.RandomRotation(0.4),
 ])
 
 preprocess_input = tf.keras.applications.mobilenet.preprocess_input
 
 # Create the base model from the pre-trained model MobileNet V2
-IMG_SHAPE = (250,250,3)
+IMG_SHAPE = (100,100,3)
 base_model = tf.keras.applications.MobileNet(input_shape=IMG_SHAPE,
                                                include_top=False,
                                                weights='imagenet')
@@ -52,7 +52,7 @@ prediction_layer = tf.keras.layers.Dense(1)
 prediction_batch = prediction_layer(feature_batch_average)
 print(prediction_batch.shape)
 
-inputs = tf.keras.Input(shape=(250, 250, 3))
+inputs = tf.keras.Input(shape=(100, 100, 3))
 x = data_augmentation(inputs)
 x = preprocess_input(x)
 x = base_model(x, training=False)
@@ -61,9 +61,9 @@ x = tf.keras.layers.Dropout(0.2)(x)
 outputs = prediction_layer(x)
 model = tf.keras.Model(inputs, outputs)
 
-base_learning_rate = 0.00001 #changed from 0.0001
+base_learning_rate = 0.0012 #changed from 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
-              loss=tf.keras.losses.CategoricalCrossentropy(),
+              loss=tfa.losses.TripletSemiHardLoss(),
               metrics=['accuracy'])
 
 model.summary()
@@ -72,60 +72,9 @@ loss0, accuracy0 = model.evaluate(validation_dataset)
 print("initial loss: {:.2f}".format(loss0))
 print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 3
+EPOCHS = 5
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
 
-#model.save("facetracking_model/GTG_tracker_new")
-                           
-
-
-# opencv object that will detect faces for us
-#face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades 
-#                                     + 'haarcascade_frontalface_default.xml')
-#video_capture = cv2.VideoCapture(0)  # webcamera
-#
-#if not video_capture.isOpened():
-#    print("Unable to access the camera")
-#else:
-#    print("Access to the camera was successfully obtained")
-#
-#print("Streaming started")
-#while True:
-#    # Capture frame-by-frame
-#    ret, frame = video_capture.read()
-#    if not ret:
-#        print("Can't receive frame (stream end?). Exiting ...")
-#        break
-#
-#    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#
-#        gray,
-#        scaleFactor=1.3,
-#        minNeighbors=5,
-#        minSize=(100, 100),
-#        flags=cv2.CASCADE_SCALE_IMAGE
-#    )
-#
-#    for (x, y, w, h) in faces:
-#        # for each face on the image detected by OpenCV
-#        # draw a rectangle around the face
-#        cv2.rectangle(frame, 
-#                      (x, y), # start_point
-#                      (x+w, y+h), # end_point
-#                      (255, 0, 0),  # color in BGR
-#                      2) # thickness in px
-#        
-    # Display the resulting frame
-#    cv2.imshow("Face detector - to quit press ESC", frame)
-#
-    # Exit with ESC
-#    key = cv2.waitKey(1)
-#    if key % 256 == 27: # ESC code
-#        break
-        
-# When everything done, release the capture
-#video_capture.release()
-#cv2.destroyAllWindows()
-#print("Streaming ended")
+model.save("facetracking_model/GTG_tracker_dir")
