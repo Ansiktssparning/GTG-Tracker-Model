@@ -24,8 +24,8 @@ validation_dataset = tf.keras.utils.image_dataset_from_directory(VAL_DIRECTORY_L
 class_names = train_dataset.class_names
 
 data_augmentation = tf.keras.Sequential([
-  tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
-  tf.keras.layers.experimental.preprocessing.RandomRotation(0.4),
+  #tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
+  tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
 ])
 
 preprocess_input = tf.keras.applications.mobilenet.preprocess_input
@@ -61,9 +61,9 @@ x = tf.keras.layers.Dropout(0.2)(x)
 outputs = prediction_layer(x)
 model = tf.keras.Model(inputs, outputs)
 
-base_learning_rate = 0.0012 #changed from 0.0001
+base_learning_rate = 0.002 #changed from 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
-              loss=tfa.losses.TripletSemiHardLoss(),
+              loss=tf.keras.losses.MeanSquaredError(),
               metrics=['accuracy'])
 
 model.summary()
@@ -72,7 +72,7 @@ loss0, accuracy0 = model.evaluate(validation_dataset)
 print("initial loss: {:.2f}".format(loss0))
 print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 5
+EPOCHS = 20
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
