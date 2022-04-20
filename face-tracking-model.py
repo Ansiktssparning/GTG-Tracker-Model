@@ -17,7 +17,7 @@ train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCA
 
 validation_dataset = tf.keras.utils.image_dataset_from_directory(VAL_DIRECTORY_LOCATION,
                                                   shuffle=True,
-                                                  batch_size=17,
+                                                  batch_size=BATCH_SIZE,
                                                   image_size=IMG_SIZE)
 #train_dataset = tf.image.resize(train_dataset, [250,250])
 #validation_dataset = tf.image.resize(validation_dataset, [250,250])
