@@ -88,9 +88,9 @@ while True:
         print("Can't receive frame (stream end?). Exiting ...")
         break
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) #konverterar till gråskala
 
-    faces = face_cascade.detectMultiScale(
+    faces = face_cascade.detectMultiScale( #detekterar objekt av olika storlek
         gray,
         scaleFactor=1.3,
         minNeighbors=5,
