@@ -3,6 +3,7 @@ import tensorflow as tf
 import matplotlib as plt
 import numpy
 import cv2
+<<<<<<< HEAD
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -20,6 +21,39 @@ face_classifier = tf.keras.models.load_model('models\GTG_tracker_test4') #load k
 class_names = ['face', 'sneaker']
 
 def get_extended_image(img, x, y, w, h, k=0.1):
+=======
+import time
+
+class student:
+    
+    name = None #Namn på elev
+    rightGazeDirection = 0.0 #Hur mycket har eleven kollat åt rätt håll
+    wrongGazeDirection = 0.0 #Hur mucket har eleven kollat åt fel håll
+    avgGazeDirection = 0
+    avgEyelid = 0
+    timeGraph = None #Base64 för grafen till hemsidan
+
+Students = student() #skapar en elev
+
+RED = (255, 0, 0) #röd färg
+GREEN = (0, 255, 0) #grön färg
+BLUE = (0, 0, 255) #blå färg
+
+startTime = None #start klockslag
+endTime = None #slut klockslag
+
+lastPrediction = None #Förra blickriktningen
+
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + 'haarcascade_frontalface_default.xml') #OpenCV model för att hitta ansikten
+
+
+face_classifier = tf.keras.models.load_model('facetracking_model/GTG_tracker_dir2') #ladda modell för klasifiering av ansiktet
+
+class_names = ['left', 'forward','right'] #namn på de olika klasserna för klassifiering
+
+def get_extended_image(img, x, y, w, h, k=20): #stulen funktion, se föklaring nedan
+>>>>>>> data_compilation
     '''
     Function, that return cropped image from 'img'
     If k=0 returns image, cropped from (x, y) (top left) to (x+w, y+h) (bottom right)
@@ -59,25 +93,44 @@ def get_extended_image(img, x, y, w, h, k=0.1):
     face_image = numpy.expand_dims(face_image, axis=0)
     return face_image
 
+<<<<<<< HEAD
 video_capture = cv2.VideoCapture(0)  # webcamera
+=======
+video_capture = cv2.VideoCapture(0)  # webkamera
+>>>>>>> data_compilation
 
 if not video_capture.isOpened():
     print("Unable to access the camera")
 else:
     print("Access to the camera was successfully obtained")
+<<<<<<< HEAD
 
 print("Streaming started - to quit press ESC")
 while True:
 
     # Capture frame-by-frame
     ret, frame = video_capture.read()
+=======
+startTime = time.time()
+print("Streaming started - to quit press ESC")
+while True:
+
+    
+    ret, frame = video_capture.read() #sparar bilden
+>>>>>>> data_compilation
     if not ret:
         print("Can't receive frame (stream end?). Exiting ...")
         break
 
+<<<<<<< HEAD
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     faces = face_cascade.detectMultiScale(
+=======
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) #konverterar till gråskala
+
+    faces = face_cascade.detectMultiScale( #detekterar objekt av olika storlek
+>>>>>>> data_compilation
         gray,
         scaleFactor=1.3,
         minNeighbors=5,
@@ -86,6 +139,7 @@ while True:
     )
 
     for (x, y, w, h) in faces:
+<<<<<<< HEAD
         # for each face on the image detected by OpenCV
         # get extended image of this face
         face_image = get_extended_image(frame, x, y, w, h, 0.5)
@@ -129,3 +183,64 @@ while True:
 video_capture.release()
 cv2.destroyAllWindows()
 print("Streaming ended")
+=======
+        face_image = get_extended_image(frame, x, y, w, h, 0.5) #plockar ut ansiktet ur bilden
+        
+        result = face_classifier.predict(face_image) #Klassifierar ansiktet
+        prediction = class_names[numpy.array(
+            result[0]).argmax(axis=0)]  
+
+        if prediction == 'left': #om eleven tittar åt vänster
+            if lastPrediction == 'right' or lastPrediction == 'not': #om eleven tittade åt fel håll förut
+                endTime = time.time() #tid för bytet
+                Students.wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
+                startTime = time.time() #startar räkningen igen
+                lastPrediction = 'left' #ändrar värdet för förra riktningen
+            color = GREEN
+        elif prediction == 'forward': #om eleven tittar framåt
+            if lastPrediction == 'right' or lastPrediction == 'not': #om eleven tittade åt fel håll förut
+                endTime = time.time() #tid för bytet
+                Students.wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
+                startTime = time.time() #startar räkningen igen
+                lastPrediction = 'forward' #ändrar värdet för förra riktningen
+            color = RED
+        elif prediction == 'right': #likt förra men skiftet sker från rätt till fel
+            if lastPrediction == 'left' or lastPrediction == 'forward':
+                endTime = time.time()
+                Students.rightGazeDirection += (endTime - startTime)
+                startTime = time.time()
+            lastPrediction = 'right'
+            color = BLUE
+        else: 
+            if lastPrediction == 'left' or lastPrediction == 'forward': #som förra if satsen
+                endTime = time.time()
+                Students.rightGazeDirection += (endTime - startTime)
+                startTime = time.time()
+            lastPrediction = 'not'
+        
+        cv2.rectangle(frame, #ritar rektagel runt ansiktet
+                      (x, y),  # start punkt
+                      (x+w, y+h),  # slut punkt
+                      color,
+                      2)  # tjocklek
+        cv2.putText(frame, #skriver ut vart man tittar ovanför rektangeln
+                    "{:6}".format(prediction),
+                    (x, y),
+                    cv2.FONT_HERSHEY_PLAIN,  # typsnitt
+                    2,  #storlek
+                    color,
+                    2)  # tjocklek
+
+    cv2.imshow("Face detector - to quit press ESC", frame) #visar bilden
+
+    key = cv2.waitKey(1) #stäng ner om ma trycker på esc
+    if key % 256 == 27:  
+        break
+    
+
+video_capture.release() #färdig :)
+cv2.destroyAllWindows()
+print("Streaming ended")
+print("Right: " + str(Students.rightGazeDirection))
+print("Wrong: "+ str(Students.wrongGazeDirection))
+>>>>>>> data_compilation

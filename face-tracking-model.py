@@ -71,7 +71,7 @@ model = tf.keras.Model(inputs, outputs)
 
 
 
-base_learning_rate = 0.000025 #changed from 0.0001
+base_learning_rate = 0.0005#changed from 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
@@ -82,11 +82,11 @@ loss0, accuracy0 = model.evaluate(validation_dataset)
 print("initial loss: {:.2f}".format(loss0))
 print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 50
+EPOCHS = 3
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
 
 print(class_names)
 
-#model.save("facetracking_model/GTG_tracker_dir2")
+model.save("facetracking_model/GTG_tracker_dir3")
