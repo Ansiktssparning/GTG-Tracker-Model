@@ -1,0 +1,21 @@
+[1mdiff --git a/face-tracking-2.py b/face-tracking-2.py[m
+[1mindex 2058023..41b0b52 100644[m
+[1m--- a/face-tracking-2.py[m
+[1m+++ b/face-tracking-2.py[m
+[36m@@ -28,7 +28,7 @@[m [mface_cascade = cv2.CascadeClassifier([m
+     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml') #OpenCV model för att hitta ansikten[m
+ [m
+ [m
+[31m-face_classifier = tf.keras.models.load_model('models\GTG_tracker_test4') #ladda modell för klasifiering av ansiktet[m
+[32m+[m[32mface_classifier = tf.keras.models.load_model('facetracking_model/GTG_tracker_dir2') #ladda modell för klasifiering av ansiktet[m
+ [m
+ class_names = ['left', 'forward','right'] #namn på de olika klasserna för klassifiering[m
+ [m
+[36m@@ -151,6 +151,7 @@[m [mwhile True:[m
+     key = cv2.waitKey(1) #stäng ner om ma trycker på esc[m
+     if key % 256 == 27:  [m
+         break[m
+[32m+[m[41m    [m
+ [m
+ video_capture.release() #färdig :)[m
+ cv2.destroyAllWindows()[m

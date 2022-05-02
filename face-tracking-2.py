@@ -6,14 +6,15 @@ import cv2
 import time
 
 class student:
+    
     name = None #Namn på elev
-    rightGazeDirection = None #Hur mycket har eleven kollat åt rätt håll
-    wrongGazeDirection = None #Hur mucket har eleven kollat åt fel håll
-    avgGazeDirection = None
-    avgEyelid = None
+    rightGazeDirection = 0.0 #Hur mycket har eleven kollat åt rätt håll
+    wrongGazeDirection = 0.0 #Hur mucket har eleven kollat åt fel håll
+    avgGazeDirection = 0
+    avgEyelid = 0
     timeGraph = None #Base64 för grafen till hemsidan
 
-Students = (student) #skapar en elev
+Students = student() #skapar en elev
 
 RED = (255, 0, 0) #röd färg
 GREEN = (0, 255, 0) #grön färg
@@ -28,11 +29,11 @@ face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml') #OpenCV model för att hitta ansikten
 
 
-face_classifier = tf.keras.models.load_model('models\GTG_tracker_test4') #ladda modell för klasifiering av ansiktet
+face_classifier = tf.keras.models.load_model('facetracking_model/GTG_tracker_dir2') #ladda modell för klasifiering av ansiktet
 
 class_names = ['left', 'forward','right'] #namn på de olika klasserna för klassifiering
 
-def get_extended_image(img, x, y, w, h, k=0.1): #stulen funktion, se föklaring nedan
+def get_extended_image(img, x, y, w, h, k=20): #stulen funktion, se föklaring nedan
     '''
     Function, that return cropped image from 'img'
     If k=0 returns image, cropped from (x, y) (top left) to (x+w, y+h) (bottom right)
@@ -78,7 +79,7 @@ if not video_capture.isOpened():
     print("Unable to access the camera")
 else:
     print("Access to the camera was successfully obtained")
-
+startTime = time.time()
 print("Streaming started - to quit press ESC")
 while True:
 
@@ -108,28 +109,28 @@ while True:
         if prediction == 'left': #om eleven tittar åt vänster
             if lastPrediction == 'right' or lastPrediction == 'not': #om eleven tittade åt fel håll förut
                 endTime = time.time() #tid för bytet
-                Students[0].wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
+                Students.wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
                 startTime = time.time() #startar räkningen igen
                 lastPrediction = 'left' #ändrar värdet för förra riktningen
             color = GREEN
         elif prediction == 'forward': #om eleven tittar framåt
             if lastPrediction == 'right' or lastPrediction == 'not': #om eleven tittade åt fel håll förut
                 endTime = time.time() #tid för bytet
-                Students[0].wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
+                Students.wrongGazeDirection += (endTime - startTime) #räknar upp hur länge man tittade fel
                 startTime = time.time() #startar räkningen igen
                 lastPrediction = 'forward' #ändrar värdet för förra riktningen
             color = RED
         elif prediction == 'right': #likt förra men skiftet sker från rätt till fel
             if lastPrediction == 'left' or lastPrediction == 'forward':
                 endTime = time.time()
-                Students[0].rightGazeDirection += (endTime - startTime)
+                Students.rightGazeDirection += (endTime - startTime)
                 startTime = time.time()
             lastPrediction = 'right'
             color = BLUE
         else: 
             if lastPrediction == 'left' or lastPrediction == 'forward': #som förra if satsen
                 endTime = time.time()
-                Students[0].rightGazeDirection += (endTime - startTime)
+                Students.rightGazeDirection += (endTime - startTime)
                 startTime = time.time()
             lastPrediction = 'not'
         
@@ -151,7 +152,10 @@ while True:
     key = cv2.waitKey(1) #stäng ner om ma trycker på esc
     if key % 256 == 27:  
         break
+    
 
 video_capture.release() #färdig :)
 cv2.destroyAllWindows()
 print("Streaming ended")
+print("Right: " + str(Students.rightGazeDirection))
+print("Wrong: "+ str(Students.wrongGazeDirection))
