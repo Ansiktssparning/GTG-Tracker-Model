@@ -7,7 +7,7 @@ TRAIN_DIRECTORY_LOCATION = r'Datasets\face_dataset_train_images'
 VAL_DIRECTORY_LOCATION = r'Datasets\face_dataset_val_images' 
 
 IMG_SIZE=(250, 250)
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 
 
 train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCATION,
@@ -29,7 +29,7 @@ data_augmentation = tf.keras.Sequential([
   #tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
   #tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
   #tf.keras.layers.experimental.preprocessing.RandomZoom(-.3,-.1)
-  tf.keras.layers.experimental.preprocessing.RandomContrast(factor=0.2),
+  #tf.keras.layers.experimental.preprocessing.RandomContrast(factor=0.2),
   
       ])
 
@@ -82,11 +82,11 @@ loss0, accuracy0 = model.evaluate(validation_dataset)
 print("initial loss: {:.2f}".format(loss0))
 print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 3
+EPOCHS = 5
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
 
 print(class_names)
 
-model.save("facetracking_model/GTG_tracker_dir3")
+model.save("facetracking_model/GTG_tracker_dir6")
