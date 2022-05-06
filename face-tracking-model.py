@@ -1,12 +1,11 @@
 import tensorflow as tf 
-import tensorflow_addons as tfa
 
 print("Tensorflow version:", tf.__version__)   
 
 TRAIN_DIRECTORY_LOCATION = r'Datasets\face_dataset_train_images'
 VAL_DIRECTORY_LOCATION = r'Datasets\face_dataset_val_images' 
 
-IMG_SIZE=(250, 250)
+IMG_SIZE=(250, 167)
 BATCH_SIZE = 32
 
 
@@ -36,7 +35,7 @@ data_augmentation = tf.keras.Sequential([
 preprocess_input = tf.keras.applications.mobilenet.preprocess_input
 
 # Create the base model from the pre-trained model MobileNet V2
-IMG_SHAPE = (250, 250,3)
+IMG_SHAPE = (250, 167,3)
 base_model = tf.keras.applications.MobileNet(input_shape=IMG_SHAPE,
                                                include_top=False,
                                                weights='imagenet')
@@ -60,7 +59,7 @@ print(prediction_batch.shape)
 
 
 
-inputs = tf.keras.Input(shape=(250, 250, 3))
+inputs = tf.keras.Input(shape=(250, 167, 3))
 x = data_augmentation(inputs)
 x = preprocess_input(x)
 x = base_model(x, training=False)
@@ -71,22 +70,22 @@ model = tf.keras.Model(inputs, outputs)
 
 
 
-base_learning_rate = 0.0005#changed from 0.0001
+base_learning_rate = 0.0003#changed from 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
               loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+              metrics=['accuracy']) 
 
 model.summary()
 
-loss0, accuracy0 = model.evaluate(validation_dataset)
-print("initial loss: {:.2f}".format(loss0))
-print("initial accuracy: {:.2f}".format(accuracy0))
+#loss0, accuracy0 = model.evaluate(validation_dataset)
+#print("initial loss: {:.2f}".format(loss0))
+#print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 5
+EPOCHS = 10
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
 
 print(class_names)
 
-model.save("facetracking_model/GTG_tracker_dir6")
+model.save("facetracking_model/GTG_tracker_dir4.h5") 

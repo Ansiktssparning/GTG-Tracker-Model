@@ -29,7 +29,7 @@ face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml') #OpenCV model för att hitta ansikten
 
 
-face_classifier = tf.keras.models.load_model('facetracking_model/GTG_tracker_dir6') #ladda modell för klasifiering av ansiktet
+face_classifier = tf.keras.models.load_model("facetracking_model\GTG_tracker_dir4.h5", compile=False)#tf.keras.models.load_model('facetracking_model/GTG_tracker_dir3') #ladda modell för klasifiering av ansiktet
 
 class_names = ['left', 'forward','right'] #namn på de olika klasserna för klassifiering
 
@@ -68,7 +68,7 @@ def get_extended_image(img, x, y, w, h, k=1.3): #stulen funktion, se föklaring 
 
     face_image = img[start_y:end_y,
                      start_x:end_x]
-    face_image = tf.image.resize(face_image, [250, 250])
+    face_image = tf.image.resize(face_image, [250, 167])
     # shape from (250, 250, 3) to (1, 250, 250, 3)
     face_image = numpy.expand_dims(face_image, axis=0)
     return face_image
