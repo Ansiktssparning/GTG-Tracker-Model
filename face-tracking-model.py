@@ -1,48 +1,44 @@
-import tensorflow as tf 
+import tensorflow as tf # importerar tensorflow
 
-print("Tensorflow version:", tf.__version__)   
+print("Tensorflow version:", tf.__version__)  # skriver ut tensorflow versionen 
 
-TRAIN_DIRECTORY_LOCATION = r'Datasets\face_dataset_train_images'
-VAL_DIRECTORY_LOCATION = r'Datasets\face_dataset_val_images' 
+TRAIN_DIRECTORY_LOCATION = r'Datasets\face_dataset_train_images' # bibliotek med träningsdata
+VAL_DIRECTORY_LOCATION = r'Datasets\face_dataset_val_images' # bibliotek med valideringsdata
 
-IMG_SIZE=(250, 167)
-BATCH_SIZE = 32
+IMG_SIZE=(167, 250) # storlek vi vill ha på bilderna
+BATCH_SIZE = 32 # variabel för batch storlek
 
 
-train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCATION,
-                                             shuffle=True,
-                                             batch_size=BATCH_SIZE,
-                                             image_size=IMG_SIZE)
+train_dataset = tf.keras.utils.image_dataset_from_directory(TRAIN_DIRECTORY_LOCATION, # skapar träningsdataset
+                                             shuffle=True, # blandar ordning av bilderna
+                                             batch_size=BATCH_SIZE, # sätter batch storlek
+                                             image_size=IMG_SIZE) # sätter bild storlek
 
-validation_dataset = tf.keras.utils.image_dataset_from_directory(VAL_DIRECTORY_LOCATION,
-                                                  shuffle=True,
-                                                  batch_size=BATCH_SIZE,
-                                                  image_size=IMG_SIZE)
-#train_dataset = tf.image.resize(train_dataset, [250,250])
-#validation_dataset = tf.image.resize(validation_dataset, [250,250])
-class_names = train_dataset.class_names
+validation_dataset = tf.keras.utils.image_dataset_from_directory(VAL_DIRECTORY_LOCATION, #skapar valideringsdataset
+                                                  shuffle=True, # blandar ordning av bilderna
+                                                  batch_size=BATCH_SIZE, # sätter batch storlek
+                                                  image_size=IMG_SIZE) # sätter bild storlek
+
+class_names = train_dataset.class_names # plockar ut klasserna från träningsdatan
 
       
 
-data_augmentation = tf.keras.Sequential([
-  #tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
-  #tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
-  #tf.keras.layers.experimental.preprocessing.RandomZoom(-.3,-.1)
-  #tf.keras.layers.experimental.preprocessing.RandomContrast(factor=0.2),
-  
+data_augmentation = tf.keras.Sequential([ # data augmentation för att utöka datasetet och göra modellen mer generell
+  tf.keras.layers.experimental.preprocessing.RandomRotation(0.2), # roterar bilderna
+  tf.keras.layers.experimental.preprocessing.RandomZoom(-.3,-.1) # ändrar zoomen
+  tf.keras.layers.experimental.preprocessing.RandomContrast(factor=0.2), # ändrar kontrasten
       ])
 
 preprocess_input = tf.keras.applications.mobilenet.preprocess_input
 
-# Create the base model from the pre-trained model MobileNet V2
-IMG_SHAPE = (250, 167,3)
-base_model = tf.keras.applications.MobileNet(input_shape=IMG_SHAPE,
+IMG_SHAPE = (167, 250,3) # bildstorlek inklusive färg
+base_model = tf.keras.applications.MobileNet(input_shape=IMG_SHAPE, #laddar bas modellen för transferlearning
                                                include_top=False,
                                                weights='imagenet')
 
-image_batch, label_batch = next(iter(train_dataset))
+image_batch, label_batch = next(iter(train_dataset)) 
 feature_batch = base_model(image_batch)
-print(feature_batch.shape)
+print(feature_batch.shape) # plockar ut och skriver ut feature delen av modellen
 
 base_model.trainable = False
 
@@ -59,7 +55,7 @@ print(prediction_batch.shape)
 
 
 
-inputs = tf.keras.Input(shape=(250, 167, 3))
+inputs = tf.keras.Input(shape=IMG_SHAPE)
 x = data_augmentation(inputs)
 x = preprocess_input(x)
 x = base_model(x, training=False)
@@ -70,7 +66,7 @@ model = tf.keras.Model(inputs, outputs)
 
 
 
-base_learning_rate = 0.0003#changed from 0.0001
+base_learning_rate = 0.0005#changed from 0.0001
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy']) 
@@ -81,11 +77,11 @@ model.summary()
 #print("initial loss: {:.2f}".format(loss0))
 #print("initial accuracy: {:.2f}".format(accuracy0))
 
-EPOCHS = 10
+EPOCHS = 5
 history = model.fit(train_dataset,
                     epochs=EPOCHS,
                     validation_data=validation_dataset)
 
 print(class_names)
 
-model.save("facetracking_model/GTG_tracker_dir4.h5") 
+model.save("facetracking_model/GTG_tracker_dir6.h5") 
